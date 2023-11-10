@@ -32,7 +32,7 @@ void account::create_account()
     cout<<"\nEnter The account No. :";
     cin>>acno;
     cout<<"\n\nEnter The Name of The account Holder : ";
-    cin.ignore()   
+    cin.ignore();   
     cin.getline(name,50);
     cout<<"\nEnter the Type of The account (C/S) :";
     cin>>type;
@@ -55,11 +55,11 @@ void account::modify()
     cout<<"\nAccount No, : "<<acno;
     cout<<"\nModify Account Holder Name : ";
     cin.ignore();
-    cin.getline(name,50)
+    cin.getline(name,50);
     cout<<"\nModify Type of Account" <<type;
-    cout<"\nBalance amount : "<<deposit;
+    cout<<"\nBalance amount : "<<deposit;
     cin>>type;
-    type = toupper(type)
+    type = toupper(type);
     cout<<"\nModify Balance amount : ";
     cin>>deposit;
 }
@@ -76,7 +76,7 @@ void account::draw(int x)
 }
 void account::report() const
 {
-    cout<<acno<<setw()<<" "<<name<<setw(10)
+    cout<<acno<<setw(10)<<" "<<name<<setw(10)
 <<" "<<type<<setw(6)<<deposit<<endl;
 }
 
@@ -95,7 +95,7 @@ char account::rettype() const
 void write_account(); //function to write record in binary file
 void display_sp(int); // function to display account details given by user
 void modify_account(int); // function to modify acc details, given by user
-void delete_account(int) //function to delete record of file
+void delete_account(int); //function to delete record of file
 void display_all(); //function to display all account details
 void deposit_withdraw(int, int); // function to depoit/withdraw amount for given account
 void intro(); // introductory screen function
@@ -129,7 +129,7 @@ int main()
         switch(ch)
         {
         case '1':
-            write_account()
+            write_account();
             break;
         case '2':
             cout<<"\n\n\tEnter the account No.";
@@ -167,7 +167,7 @@ int main()
         case '8':
             cout<<"\n\n\tThanks for using bank management system";
             break;
-        default :cout"\a";
+        default :cout<<"\a";
         }
         cin.ignore();
         cin.get();
@@ -185,5 +185,70 @@ void write_account()
     ofstream outFile;
     outFile.open("account.dat", ios::binary | ios:: app);
     ac.create_account();
-    outFile.write
+    outFile.write(reinterpret_cast<char *> (&ac), sizeof(account));
+    outFile.close();
+}
+
+// function to read specific record from file
+
+void display_sp (int n)
+{
+    account ac;
+    bool flag=false;
+    ifstream inFile;
+    inFile.open("account.dat", ios::binary);
+    if (inFile)
+    {
+        cout<<"File could not be opened !! Press any key...";
+        return;
+    }
+    cout<<"\nBALANCE DETAILS\n";
+
+    while(inFile.read(reinterpret_cast<char *> (&ac), sizeof(account)))
+    {
+            if(ac.retacno()==n)
+            {
+                    ac.show_account();
+                    flag=true;
+            }
+    }
+    inFile.close();
+    if(flag==false)
+        cout<<"\n\nAccount number does not exist";
+
+}
+
+//function to modify record of file
+
+void modify_account(int n)
+{
+    bool found=false;
+    account ac;
+    fstream File;
+    File.open("account.dat", ios::binary|ios::in|ios::out);
+    if(!File)
+    {
+        cout<<"File could not be opened !! Press any Key...";
+        return;
+    }
+    while(!File.eof() && found==false)
+    {
+        File.read(reinterpret_cast<char *> (&ac), sizeof(account));
+        if(ac.retacno()==n)
+        {
+            ac.show_account();
+            cout<<"\n\nEnter The New Details of account"<<endl;
+            ac.modify();
+            int pos=(-1)*static_cast<int>(sizeof(account));
+            File.seekp(pos,ios::cur);
+            File.write(reinterpret_cast<char *> (&ac), sizeof(account));
+            cout<<"\n\n\t Record Updated";
+            found=true;
+
+        }
+    }
+    File.close();
+    if(found==false)
+        cout<<"\n\n Record Not Found";
+
 }
